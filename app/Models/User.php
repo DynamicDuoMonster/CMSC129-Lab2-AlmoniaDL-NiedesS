@@ -22,6 +22,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'is_admin', // Add this if you have an is_admin column
     ];
 
     /**
@@ -44,6 +45,22 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_admin' => 'boolean', // Add this to cast is_admin to boolean
         ];
+    }
+
+    /**
+     * Check if the user is an admin
+     */
+    public function isAdmin(): bool
+    {
+        // Check if user has is_admin column set to true
+        return $this->is_admin ?? false;
+
+        // Alternative: Check by email (uncomment if you don't have is_admin column)
+        // return $this->email === 'admin@example.com';
+
+        // Alternative: Check by role column (if you have a role column)
+        // return $this->role === 'admin';
     }
 }
