@@ -1,45 +1,80 @@
 import './bootstrap';
+function openPanel() {
+    document.getElementById('sidePanel').classList.add('open');
+    document.getElementById('overlay').style.display = 'block';
+}
 
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-        }
-    });
-}, { threshold: 0.1 });
+function closePanel() {
+    document.getElementById('sidePanel').classList.remove('open');
+    document.getElementById('overlay').style.display = 'none';
+}
 
-document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+document.getElementById('openPanel').addEventListener('click', openPanel);
 
+// Image upload
+const dropZone    = document.getElementById('dropZone');
+const fileInput   = document.getElementById('file-input');
+const previewGrid = document.getElementById('previewGrid');
+const placeholder = document.getElementById('placeholder');
 
-// ── COLOR DOT SELECTOR ──
-document.querySelectorAll('.color-dots').forEach(dotsWrapper => {
-    dotsWrapper.querySelectorAll('.dot').forEach(dot => {
-        dot.addEventListener('click', () => {
-            dotsWrapper.querySelectorAll('.dot').forEach(d => d.classList.remove('active'));
-            dot.classList.add('active');
-        });
-    });
+dropZone.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('click', (e) => e.stopPropagation());
+fileInput.addEventListener('change', (e) => handleFiles(Array.from(e.target.files)));
+
+dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('drag-active');
 });
 
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-active'));
 
-// ── NAVBAR ACTIVE CATEGORY ──
-const currentPath = window.location.search;
-document.querySelectorAll('.nav-cats a').forEach(link => {
-    if (link.href.includes(currentPath) && currentPath !== '') {
-        link.classList.add('active');
-    }
+dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-active');
+    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+    handleFiles(files);
 });
 
+function handleFiles(files) {
+    if (files.length === 0) return;
+    placeholder.style.display = 'none';
+    dropZone.classList.add('has-image');
 
-// ── SEARCH FORM SUBMIT ON ENTER ──
-const searchInput = document.querySelector('.nav-search');
-if (searchInput) {
-    searchInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            const query = searchInput.value.trim();
-            if (query) {
-                window.location.href = `/shoes?search=${encodeURIComponent(query)}`;
-            }
-        }
+    files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'preview-item-wrapper';
+
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.className = 'image-preview-item';
+
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'remove-image-btn';
+            removeBtn.textContent = '✕';
+            removeBtn.addEventListener('click', (ev) => {
+                ev.stopPropagation();
+                wrapper.remove();
+                if (previewGrid.children.length === 0) {
+                    placeholder.style.display = 'flex';
+                    dropZone.classList.remove('has-image');
+                }
+            });
+
+            const addMore = document.querySelector('.add-more-overlay');
+            if (addMore) addMore.remove();
+
+            wrapper.appendChild(img);
+            wrapper.appendChild(removeBtn);
+            previewGrid.appendChild(wrapper);
+
+            const addMoreDiv = document.createElement('div');
+            addMoreDiv.className = 'add-more-overlay';
+            addMoreDiv.textContent = '+ Add More';
+            previewGrid.appendChild(addMoreDiv);
+        };
+        reader.readAsDataURL(file);
     });
 }

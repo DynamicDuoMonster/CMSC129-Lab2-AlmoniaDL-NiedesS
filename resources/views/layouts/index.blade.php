@@ -6,7 +6,7 @@
     <title>Admin Dashboard - SoleSearch</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=dm-sans:400,500,700" rel="stylesheet" />
-    @vite(['resources/css/dashboard.css', 'resources/css/app.css'])
+    @vite(['resources/css/dashboard.css', 'resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
 
@@ -18,11 +18,8 @@
         <div class="dashboard-header">
             <h2>All Products</h2>
             <div class="header-actions">
-                <a href='#' class="trash-btn">🗑 Trash</a>
-                <a href="#" class="add-btn">+ Add Shoe</a>
-                <form method="POST" action="#" style="display:inline;">
-                    @csrf
-                </form>
+                <a href="{{ route('admin.shoes.trash') }}" class="trash-btn">🗑 Trash</a>
+                <button class="add-btn" id="openPanel">+ Add Shoe</button>
             </div>
         </div>
 
@@ -35,7 +32,6 @@
         <div class="shoes">
             @forelse($shoes as $shoe)
                 <div class="shoe-card-admin">
-                    {{-- Images --}}
                     <div class="shoe-images">
                         @if(!empty($shoe->image_url[0]))
                             <img src="{{ asset('storage/' . $shoe->image_url[0]) }}" alt="{{ $shoe->shoe_name }}" class="shoe-img" />
@@ -43,8 +39,6 @@
                             <div class="shoe-img-placeholder">No Image</div>
                         @endif
                     </div>
-
-                    {{-- Details --}}
                     <div class="shoe-info">
                         <h3>{{ $shoe->shoe_name }}</h3>
                         <p class="shoe-brand">{{ $shoe->brand }}</p>
@@ -56,18 +50,13 @@
                             @endforeach
                         </p>
                     </div>
-
-                    {{-- Actions --}}
                     <div class="admin-actions">
                         <a href="{{ route('admin.shoes.edit', $shoe->id) }}" class="btn-edit">Edit</a>
-
                         <form method="POST" action="{{ route('admin.shoes.softDelete', $shoe->id) }}" style="display:inline;">
                             @csrf
                             @method('PATCH')
                             <button type="submit" class="btn-delete"
-                                onclick="return confirm('Move this shoe to trash?')">
-                                Delete
-                            </button>
+                                onclick="return confirm('Move this shoe to trash?')">Delete</button>
                         </form>
                     </div>
                 </div>
@@ -77,6 +66,16 @@
         </div>
 
     </div>
+
+    {{-- Add Shoe Panel --}}
+    @include('components.addform')
+
+
+    @if($errors->any())
+    <script>
+        document.addEventListener('DOMContentLoaded', () => openPanel());
+    </script>
+    @endif
 
 </body>
 </html>

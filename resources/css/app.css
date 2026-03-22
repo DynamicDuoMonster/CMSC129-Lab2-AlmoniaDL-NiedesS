@@ -222,3 +222,18 @@ body {
     text-align: center;
 }
 
+.nav_logout-btn {
+    font-size: 13px;
+    color: #aaa;
+    text-decoration: none;
+    transition: color 0.15s ease;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 0;
+}
+
+.nav_logout-btn:hover {
+    color: #fff;
+}
