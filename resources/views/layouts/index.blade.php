@@ -34,7 +34,7 @@
                 <div class="shoe-card-admin">
                     <div class="shoe-images">
                         @if(!empty($shoe->image_url[0]))
-                            <img src="{{ asset('storage/' . $shoe->image_url[0]) }}" alt="{{ $shoe->shoe_name }}" class="shoe-img" />
+                            <img src="{{ $shoe->image_url[0] }}" alt="{{ $shoe->shoe_name }}" class="shoe-img" />
                         @else
                             <div class="shoe-img-placeholder">No Image</div>
                         @endif

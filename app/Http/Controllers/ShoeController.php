@@ -5,24 +5,21 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Shoe;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class ShoeController extends Controller
 {
-    // View all shoes
     public function index()
     {
         $shoes = Shoe::active()->latest()->get();
         return view('layouts.index', compact('shoes'));
     }
 
-    // Show add form
     public function create()
     {
         return view('layouts.create');
     }
 
-    // Store new shoe
     public function store(Request $request)
     {
         $request->validate([
@@ -40,7 +37,12 @@ class ShoeController extends Controller
         $imagePaths = [];
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $image) {
-                $imagePaths[] = $image->store('shoes', 'public');
+                $cloudinary = new \Cloudinary\Cloudinary(env('CLOUDINARY_URL'));
+
+                $result = $cloudinary->uploadApi()->upload($image->getRealPath(), [
+                    'folder' => 'solesearch/shoes'
+                ]);
+                $imagePaths[] = $result['secure_url'];
             }
         }
 
@@ -57,13 +59,11 @@ class ShoeController extends Controller
         return redirect()->route('admin.shoes.index')->with('success', 'Shoe added successfully.');
     }
 
-    // Show edit form
     public function edit(Shoe $shoe)
     {
-        return view('dashboard.shoes.edit', compact('shoe'));
+        return view('layouts.shoes-edit', compact('shoe'));
     }
 
-    // Update shoe
     public function update(Request $request, Shoe $shoe)
     {
         $request->validate([
@@ -78,10 +78,16 @@ class ShoeController extends Controller
 
         $colors = array_map('trim', explode(',', $request->color));
 
+        // Keep existing images
         $imagePaths = $shoe->image_url ?? [];
+
+        // Upload new images to Cloudinary
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $image) {
-                $imagePaths[] = $image->store('shoes', 'public');
+                $uploaded = Cloudinary::upload($image->getRealPath(), [
+                    'folder' => 'solesearch/shoes'
+                ]);
+                $imagePaths[] = $uploaded->getSecurePath();
             }
         }
 
@@ -98,7 +104,6 @@ class ShoeController extends Controller
         return redirect()->route('admin.shoes.index')->with('success', 'Shoe updated successfully.');
     }
 
-    // Soft delete
     public function softDelete(Shoe $shoe)
     {
         $shoe->update([
@@ -109,14 +114,12 @@ class ShoeController extends Controller
         return redirect()->route('admin.shoes.index')->with('success', 'Shoe moved to trash.');
     }
 
-    // View trash
     public function trash()
     {
         $shoes = Shoe::trashed()->latest('deleted_at')->get();
-        return view('dashboard.shoes.trash', compact('shoes'));
+        return view('layouts.shoes-trash', compact('shoes'));
     }
 
-    // Restore from trash
     public function restore(Shoe $shoe)
     {
         $shoe->update([
@@ -127,12 +130,15 @@ class ShoeController extends Controller
         return redirect()->route('admin.shoes.trash')->with('success', 'Shoe restored.');
     }
 
-    // Hard delete
     public function destroy(Shoe $shoe)
     {
-        foreach ($shoe->image_url ?? [] as $path) {
-            Storage::disk('public')->delete($path);
+        // Delete images from Cloudinary
+        foreach ($shoe->image_url ?? [] as $url) {
+            // Extract public_id from URL
+            $publicId = pathinfo(parse_url($url, PHP_URL_PATH), PATHINFO_FILENAME);
+            Cloudinary::destroy('solesearch/shoes/' . $publicId);
         }
+
         $shoe->delete();
 
         return redirect()->route('admin.shoes.trash')->with('success', 'Shoe permanently deleted.');
