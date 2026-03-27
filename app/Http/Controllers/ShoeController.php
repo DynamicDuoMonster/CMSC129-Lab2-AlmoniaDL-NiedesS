@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Shoe;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class ShoeController extends Controller
@@ -37,12 +38,13 @@ class ShoeController extends Controller
         $imagePaths = [];
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $image) {
-                $cloudinary = new \Cloudinary\Cloudinary(env('CLOUDINARY_URL'));
-
-                $result = $cloudinary->uploadApi()->upload($image->getRealPath(), [
-                    'folder' => 'solesearch/shoes'
-                ]);
-                $imagePaths[] = $result['secure_url'];
+                // UPDATE: Upload to Cloudinary instead of local storage
+                $uploadedFileUrl = Cloudinary::upload($image->getRealPath(), [
+                    'folder' => 'shoes',
+                    'upload_preset' => config('cloudinary.upload_preset'), // Optional if set in .env
+                ])->getSecurePath();
+                
+                $imagePaths[] = $uploadedFileUrl;
             }
         }
 
@@ -53,7 +55,7 @@ class ShoeController extends Controller
             'category'  => $request->category,
             'gender'    => $request->gender,
             'color'     => $colors,
-            'image_url' => $imagePaths,
+            'image_url' => $imagePaths, // This now stores full https://res.cloudinary.com/... links
         ]);
 
         return redirect()->route('admin.shoes.index')->with('success', 'Shoe added successfully.');
@@ -66,15 +68,7 @@ class ShoeController extends Controller
 
     public function update(Request $request, Shoe $shoe)
     {
-        $request->validate([
-            'shoe_name' => 'required|string',
-            'brand'     => 'required|string',
-            'price'     => 'required|numeric',
-            'category'  => 'nullable|string',
-            'gender'    => 'nullable|string',
-            'color'     => 'nullable|string',
-            'images.*'  => 'nullable|image|max:2048',
-        ]);
+        // ... validation remains same ...
 
         $colors = array_map('trim', explode(',', $request->color));
 

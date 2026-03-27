@@ -1,4 +1,8 @@
 import './bootstrap';
+import Alpine from 'alpinejs';
+
+window.Alpine = Alpine;
+Alpine.start();
 function openPanel() {
     document.getElementById('sidePanel').classList.add('open');
     document.getElementById('overlay').style.display = 'block';

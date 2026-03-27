@@ -1,4 +1,8 @@
 import './bootstrap';
+import Alpine from 'alpinejs';
+
+window.Alpine = Alpine;
+Alpine.start();
 
 // Only run panel code if elements exist
 const openPanelBtn = document.getElementById('openPanel');
