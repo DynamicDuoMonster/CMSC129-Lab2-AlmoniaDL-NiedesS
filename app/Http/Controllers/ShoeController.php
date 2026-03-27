@@ -38,16 +38,14 @@ class ShoeController extends Controller
         $imagePaths = [];
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $image) {
-                // UPDATE: Upload to Cloudinary instead of local storage
-                $uploadedFileUrl = Cloudinary::upload($image->getRealPath(), [
-                    'folder' => 'shoes',
-                    'upload_preset' => config('cloudinary.upload_preset'), // Optional if set in .env
-                ])->getSecurePath();
-                
-                $imagePaths[] = $uploadedFileUrl;
+                $cloudinary = new \Cloudinary\Cloudinary(env('CLOUDINARY_URL'));
+
+                $result = $cloudinary->uploadApi()->upload($image->getRealPath(), [
+                    'folder' => 'solesearch/shoes'
+                ]);
+                $imagePaths[] = $result['secure_url'];
             }
         }
-
         Shoe::create([
             'shoe_name' => $request->shoe_name,
             'brand'     => $request->brand,
