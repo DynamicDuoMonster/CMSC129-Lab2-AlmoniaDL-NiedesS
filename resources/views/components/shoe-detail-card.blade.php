@@ -69,12 +69,14 @@
             <p class="price">P{{ number_format($shoe->price) }}</p>
         </div>
 
-        {{-- Admin Management Actions --}}
         <div class="admin-actions">
-            {{-- 1. Edit: Points to admin.shoes.edit --}}
-            <a href="{{ route('admin.shoes.edit', $shoe->id) }}" class="btn-edit-full">
-                Edit Product
-            </a>
+            <button 
+            type="button" 
+            class="btn-edit-full" 
+            onclick="window.openEditPanel({{ json_encode($shoe) }})"
+        >
+            Edit Product
+        </button>
             
             {{-- 2. Soft Delete: Points to admin.shoes.softDelete --}}
             <form method="POST" action="{{ route('admin.shoes.softDelete', $shoe->id) }}" class="delete-form">

@@ -61,7 +61,7 @@ class ShoeController extends Controller
 
     public function edit(Shoe $shoe)
     {
-        return view('layouts.shoes-edit', compact('shoe'));
+        return redirect()->route('admin.shoes.index');
     }
 
     public function update(Request $request, Shoe $shoe)

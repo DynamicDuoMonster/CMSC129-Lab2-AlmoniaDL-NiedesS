@@ -83,6 +83,9 @@
     {{-- Add Shoe Panel --}}
     @include('components.addform')
 
+    {{-- New Edit Shoe Panel --}}
+    @include('components.editform')
+
 
     @if($errors->any())
     <script>
