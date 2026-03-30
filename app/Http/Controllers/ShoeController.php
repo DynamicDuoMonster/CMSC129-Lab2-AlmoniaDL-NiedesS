@@ -10,9 +10,23 @@ use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class ShoeController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $shoes = Shoe::active()->latest()->get();
+        // Start with active shoes
+        $query = Shoe::active();
+
+        // Filter by Category (Lifestyle, Sports)
+        if ($request->filled('category')) {
+            $query->where('category', $request->category);
+        }
+
+        // Filter by Gender (Mens, Womens)
+        if ($request->filled('gender')) {
+            $query->where('gender', $request->gender);
+        }
+
+        $shoes = $query->latest()->get();
+        
         return view('layouts.index', compact('shoes'));
     }
 

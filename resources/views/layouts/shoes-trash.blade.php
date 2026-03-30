@@ -53,7 +53,7 @@
                         <div class="trash-card-body">
                             <h3 class="trash-card-name">{{ $shoe->shoe_name }}</h3>
                             <p class="trash-card-brand">{{ $shoe->brand }}</p>
-                            <p class="trash-card-price">${{ number_format($shoe->price, 2) }}</p>
+                            <p class="trash-card-price">P{{ number_format($shoe->price, 2) }}</p>
                         </div>
 
                         {{-- Actions --}}

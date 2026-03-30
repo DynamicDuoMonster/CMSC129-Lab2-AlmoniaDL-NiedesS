@@ -611,3 +611,15 @@
     background: #2a5a2a;
     color: #7fe87f;
 }
+
+.nav__pill.active {
+    background-color: #ff4d4d; /* Or your brand color */
+    color: white;
+    border-color: #ff4d4d;
+}
+
+.nav__pill--clear {
+    color: #888;
+    font-size: 0.8rem;
+    text-decoration: underline;
+}

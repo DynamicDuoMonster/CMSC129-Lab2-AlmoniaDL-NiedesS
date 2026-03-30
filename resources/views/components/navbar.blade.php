@@ -14,10 +14,21 @@
 
     <!-- Category Pills -->
     <div class="nav__pills">
-        <a href="#" class="nav__pill">Lifestyle</a>
-        <a href="#" class="nav__pill">Sports</a>
-        <a href="#" class="nav__pill">Mens</a>
-        <a href="#" class="nav__pill">Womens</a>
+        <a href="{{ route('admin.shoes.index', ['category' => 'Lifestyle']) }}" 
+        class="nav__pill {{ request('category') == 'Lifestyle' ? 'active' : '' }}">Lifestyle</a>
+        
+        <a href="{{ route('admin.shoes.index', ['category' => 'Sports']) }}" 
+        class="nav__pill {{ request('category') == 'Sports' ? 'active' : '' }}">Sports</a>
+
+        <a href="{{ route('admin.shoes.index', ['gender' => 'Mens']) }}" 
+        class="nav__pill {{ request('gender') == 'Mens' ? 'active' : '' }}">Mens</a>
+        
+        <a href="{{ route('admin.shoes.index', ['gender' => 'Womens']) }}" 
+        class="nav__pill {{ request('gender') == 'Womens' ? 'active' : '' }}">Womens</a>
+        
+        @if(request('category') || request('gender'))
+            <a href="{{ route('admin.shoes.index') }}" class="nav__pill nav__pill--clear">Clear All</a>
+        @endif
     </div>
 
     <!-- Auth -->
