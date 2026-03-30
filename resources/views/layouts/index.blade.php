@@ -6,7 +6,43 @@
     <title>Admin Dashboard - SoleSearch</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=dm-sans:400,500,700" rel="stylesheet" />
-    @vite(['resources/css/dashboard.css', 'resources/css/app.css', 'resources/js/app.js'])
+
+    @vite([
+        'resources/css/app.css',
+        'resources/css/dashboard.css',
+        'resources/css/components/shoe-detail-card.css'
+    ])
+
+    <style>
+        /* Responsive Grid Logic */
+        .shoes {
+            display: grid;
+            /* Creates as many columns as fit, each at least 450px wide */
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 20px;
+            padding: 20px 0;
+        }
+
+        /* Adjusts for smaller screens where 450px might be too wide */
+        @media (max-width: 600px) {
+            .shoes {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .shoe-card-container {
+            width: 100%;
+        }
+
+        .alert-success {
+            background: rgba(46, 204, 113, 0.1);
+            color: #2ecc71;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #2ecc71;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
 
@@ -31,37 +67,13 @@
         {{-- Shoes Grid --}}
         <div class="shoes">
             @forelse($shoes as $shoe)
-                <div class="shoe-card-admin">
-                    <div class="shoe-images">
-                        @if(!empty($shoe->image_url[0]))
-                            <img src="{{ $shoe->image_url[0] }}" alt="{{ $shoe->shoe_name }}" class="shoe-img" />
-                        @else
-                            <div class="shoe-img-placeholder">No Image</div>
-                        @endif
-                    </div>
-                    <div class="shoe-info">
-                        <h3>{{ $shoe->shoe_name }}</h3>
-                        <p class="shoe-brand">{{ $shoe->brand }}</p>
-                        <p class="shoe-price">${{ number_format($shoe->price, 2) }}</p>
-                        <p class="shoe-meta">{{ $shoe->category }} · {{ $shoe->gender }}</p>
-                        <p class="shoe-colors">
-                            @foreach($shoe->color as $c)
-                                <span class="color-tag">{{ $c }}</span>
-                            @endforeach
-                        </p>
-                    </div>
-                    <div class="admin-actions">
-                        <a href="{{ route('admin.shoes.edit', $shoe->id) }}" class="btn-edit">Edit</a>
-                        <form method="POST" action="{{ route('admin.shoes.softDelete', $shoe->id) }}" style="display:inline;">
-                            @csrf
-                            @method('PATCH')
-                            <button type="submit" class="btn-delete"
-                                onclick="return confirm('Move this shoe to trash?')">Delete</button>
-                        </form>
-                    </div>
+                <div class="shoe-card-container">
+                    <x-shoe-detail-card :shoe="$shoe" />
                 </div>
             @empty
-                <p class="empty-msg">No shoes found.</p>
+                <div class="empty-state">
+                    <p class="empty-msg">No shoes found in the inventory.</p>
+                </div>
             @endforelse
         </div>
 
@@ -70,6 +82,11 @@
     {{-- Add Shoe Panel --}}
     @include('components.addform')
 
+    {{-- Edit Shoe Panel --}}
+    @include('components.editform')
+
+    {{-- Confirm Modal (required for Move to Trash and other confirmations) --}}
+    @include('components.confirm-modal')
 
     @if($errors->any())
     <script>
@@ -77,5 +94,6 @@
     </script>
     @endif
 
+    @vite(['resources/js/app.js'])
 </body>
 </html>

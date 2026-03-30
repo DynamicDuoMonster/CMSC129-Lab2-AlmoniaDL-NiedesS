@@ -9,6 +9,7 @@ export default defineConfig({
                 'resources/css/app.css',
                 'resources/css/dashboard.css',
                 'resources/js/app.js',
+                'resources/css/components/shoe-detail-card.css',
             ],
             refresh: true,
         }),

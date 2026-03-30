@@ -1,0 +1,132 @@
+/* ── Container: Horizontal Layout ── */
+.shoe-details {
+    background: #111 !important;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 15px;
+    color: white !important;
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    align-items: stretch;
+    min-height: 180px;
+    transition: transform 0.2s ease;
+}
+
+/* ── Image: Left Side — locked dimensions ── */
+.shoe-image-container {
+    flex: 0 0 160px;
+    width: 160px;
+    height: 160px !important;
+    background: #222 !important;
+    border-radius: 8px;
+    position: relative;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin-bottom: 0;
+}
+
+.shoe-image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 10px;
+    display: block;
+}
+
+/* ── Info: Right Side ── */
+.shoe-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-width: 0;
+}
+
+.shoe-info h4 {
+    font-size: 1.1rem;
+    margin: 5px 0;
+    color: white !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.brand-badge {
+    color: #aaa;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    font-weight: bold;
+}
+
+.tags {
+    font-size: 0.85rem;
+    color: #888;
+    margin-bottom: 5px;
+}
+
+.price {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #ff4d4d;
+    margin: 0;
+}
+
+/* ── Actions: Side-by-Side at bottom ── */
+.admin-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.btn-edit-full,
+.btn-delete-full {
+    flex: 1;
+    padding: 8px 5px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    text-decoration: none;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.btn-edit-full {
+    background: #252525;
+    color: white;
+    border-color: #444;
+}
+
+.btn-delete-full {
+    background: rgba(255, 77, 77, 0.1);
+    color: #ff4d4d;
+    border-color: rgba(255, 77, 77, 0.2);
+}
+
+.delete-form {
+    flex: 1;
+    margin: 0;
+}
+
+/* ── Image cycling dots ── */
+.image-dots {
+    position: absolute;
+    bottom: 8px;
+    display: flex;
+    gap: 4px;
+}
+
+.dot {
+    width: 6px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+}
+
+.dot.active {
+    background: white;
+}

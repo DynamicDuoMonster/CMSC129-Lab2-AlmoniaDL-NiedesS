@@ -23,10 +23,13 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/shoes', [ShoeController::class, 'index'])->name('shoes.index');
     Route::get('/shoes/create', [ShoeController::class, 'create'])->name('shoes.create');
     Route::post('/shoes', [ShoeController::class, 'store'])->name('shoes.store');
+
+    // ⚠️ Static routes MUST come before {shoe} wildcard routes
+    Route::get('/shoes/trash', [ShoeController::class, 'trash'])->name('shoes.trash');
+
     Route::get('/shoes/{shoe}/edit', [ShoeController::class, 'edit'])->name('shoes.edit');
     Route::put('/shoes/{shoe}', [ShoeController::class, 'update'])->name('shoes.update');
     Route::patch('/shoes/{shoe}/soft-delete', [ShoeController::class, 'softDelete'])->name('shoes.softDelete');
-    Route::get('/shoes/trash', [ShoeController::class, 'trash'])->name('shoes.trash');
     Route::patch('/shoes/{shoe}/restore', [ShoeController::class, 'restore'])->name('shoes.restore');
     Route::delete('/shoes/{shoe}', [ShoeController::class, 'destroy'])->name('shoes.destroy');
 });
