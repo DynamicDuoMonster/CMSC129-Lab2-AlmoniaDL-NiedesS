@@ -112,9 +112,7 @@
         }
     </style>
 </head>
-<body style="background: #000; margin: 0;">
-
-    @include('components.navbar')
+<body style="background: #000; margin: 0;">     
 
     <div class="reset-container">
         <div class="reset-card">
