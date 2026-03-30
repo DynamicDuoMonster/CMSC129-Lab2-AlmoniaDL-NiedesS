@@ -2,14 +2,14 @@
 
 @props(['shoe', 'disableClick' => false])
 
-<div 
-    class="shoe-details" 
-    x-data="{ 
-        currentIndex: 0, 
-        isHovered: false, 
+<div
+    class="shoe-details"
+    x-data="{
+        currentIndex: 0,
+        isHovered: false,
         images: {{ json_encode($shoe->image_url ?? []) }},
         interval: null,
-        
+
         get currentImage() {
             return this.images.length > 0 ? this.images[this.currentIndex] : '';
         },
@@ -22,7 +22,7 @@
                 }, 1200);
             }
         },
-        
+
         stopCycle() {
             this.isHovered = false;
             if (this.interval) {
@@ -37,10 +37,10 @@
 >
     {{-- Image Container (Left Side) --}}
     <div class="shoe-image-container">
-        <img 
+        <img
             x-show="images.length > 0"
-            :src="currentImage" 
-            alt="{{ $shoe->shoe_name }}" 
+            :src="currentImage"
+            alt="{{ $shoe->shoe_name }}"
             class="shoe-img"
             :key="currentIndex"
         />
@@ -70,19 +70,34 @@
         </div>
 
         <div class="admin-actions">
-            <button 
-            type="button" 
-            class="btn-edit-full" 
-            onclick="window.openEditPanel({{ json_encode($shoe) }})"
-        >
-            Edit Product
-        </button>
-            
-            {{-- 2. Soft Delete: Points to admin.shoes.softDelete --}}
-            <form method="POST" action="{{ route('admin.shoes.softDelete', $shoe->id) }}" class="delete-form">
+            <button
+                type="button"
+                class="btn-edit-full"
+                onclick="window.openEditPanel({{ json_encode($shoe) }})"
+            >
+                Edit Product
+            </button>
+
+            {{-- Soft Delete: uses confirm modal instead of browser confirm() --}}
+            <form
+                method="POST"
+                action="{{ route('admin.shoes.softDelete', $shoe->id) }}"
+                class="delete-form"
+                id="trashForm-{{ $shoe->id }}"
+            >
                 @csrf
-                @method('PATCH') {{-- Matches your route: Route::patch(...) --}}
-                <button type="submit" class="btn-delete-full" onclick="return confirm('Move this shoe to trash?')">
+                @method('PATCH')
+                <button
+                    type="button"
+                    class="btn-delete-full"
+                    onclick="showConfirm({
+                        icon: '🗑',
+                        title: 'Move to Trash?',
+                        message: 'This shoe will be moved to trash. You can restore it later.',
+                        okLabel: 'Move to Trash',
+                        onConfirm: () => document.getElementById('trashForm-{{ $shoe->id }}').submit()
+                    })"
+                >
                     Move to Trash
                 </button>
             </form>

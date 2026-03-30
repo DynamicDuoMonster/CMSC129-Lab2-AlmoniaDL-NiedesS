@@ -1,0 +1,180 @@
+.trash-page {
+    padding: 24px 28px;
+    min-height: 100vh;
+    background: #000;
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+}
+
+/* ── Back Button ── */
+.trash-back-btn {
+    display: inline-block;
+    margin-bottom: 20px;
+    padding: 8px 16px;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: #aaa;
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.trash-back-btn:hover {
+    background: #222;
+    border-color: #555;
+    color: #fff;
+}
+
+/* ── Title ── */
+.trash-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 24px;
+    color: #fff;
+}
+
+/* ── Flash ── */
+.alert-success {
+    background: #0a1a0a;
+    border: 1px solid #1a5c1a;
+    color: #4caf50;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+}
+
+/* ── Empty ── */
+.trash-empty {
+    color: #555;
+    font-size: 0.95rem;
+    text-align: center;
+    padding: 60px 0;
+}
+
+/* ── Grid ── */
+.trash-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+/* ── Card ── */
+.trash-card {
+    background: #111;
+    border: 1px solid #222;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    opacity: 0.85;
+    transition: opacity 0.2s;
+}
+
+.trash-card:hover {
+    opacity: 1;
+}
+
+/* ── Image ── */
+.trash-card-img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    background: #1a1a1a;
+    display: block;
+}
+
+.trash-card-img-placeholder {
+    width: 100%;
+    height: 180px;
+    background: #1a1a1a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #444;
+    font-size: 0.8rem;
+}
+
+/* ── Body ── */
+.trash-card-body {
+    padding: 12px 14px 8px;
+    flex: 1;
+}
+
+.trash-card-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0 0 4px;
+    color: #fff;
+}
+
+.trash-card-brand {
+    font-size: 0.8rem;
+    color: #888;
+    margin: 0 0 4px;
+}
+
+.trash-card-price {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #c9954a;
+    margin: 0;
+}
+
+/* ── Actions ── */
+.trash-card-actions {
+    padding: 10px 14px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.trash-card-actions form {
+    margin: 0;
+}
+
+.btn-restore,
+.btn-permanent-delete {
+    width: 100%;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.btn-restore {
+    background: #1a4a1a;
+    color: #4caf50;
+}
+
+.btn-restore:hover {
+    background: #2a5a2a;
+    color: #6fbf6f;
+}
+
+.btn-permanent-delete {
+    background: #4a1a1a;
+    color: #ff4444;
+}
+
+.btn-permanent-delete:hover {
+    background: #5a2a2a;
+    color: #ff6666;
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+    .trash-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .trash-page {
+        padding: 16px;
+    }
+}

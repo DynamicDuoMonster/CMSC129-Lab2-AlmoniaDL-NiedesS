@@ -66,20 +66,39 @@ class ShoeController extends Controller
 
     public function update(Request $request, Shoe $shoe)
     {
-        // ... validation remains same ...
+        $request->validate([
+            'shoe_name' => 'required|string',
+            'brand'     => 'required|string',
+            'price'     => 'required|numeric',
+            'category'  => 'nullable|string',
+            'gender'    => 'nullable|string',
+            'color'     => 'nullable|string',
+            'images.*'  => 'nullable|image|max:2048',
+        ]);
 
         $colors = array_map('trim', explode(',', $request->color));
 
-        // Keep existing images
-        $imagePaths = $shoe->image_url ?? [];
+        // Start from the existing images still marked as kept
+        $keptUrls   = $request->input('existing_images', []);
+        $deleteUrls = $request->input('delete_images', []);
 
-        // Upload new images to Cloudinary
+        // Delete removed images from Cloudinary
+        foreach ($deleteUrls as $url) {
+            $publicId = 'solesearch/shoes/' . pathinfo(parse_url($url, PHP_URL_PATH), PATHINFO_FILENAME);
+            $cloudinary = new \Cloudinary\Cloudinary(env('CLOUDINARY_URL'));
+            $cloudinary->uploadApi()->destroy($publicId);
+        }
+
+        $imagePaths = $keptUrls;
+
+        // Upload any new images (use same method as store())
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $image) {
-                $uploaded = Cloudinary::upload($image->getRealPath(), [
+                $cloudinary = new \Cloudinary\Cloudinary(env('CLOUDINARY_URL'));
+                $result = $cloudinary->uploadApi()->upload($image->getRealPath(), [
                     'folder' => 'solesearch/shoes'
                 ]);
-                $imagePaths[] = $uploaded->getSecurePath();
+                $imagePaths[] = $result['secure_url'];
             }
         }
 
@@ -126,9 +145,9 @@ class ShoeController extends Controller
     {
         // Delete images from Cloudinary
         foreach ($shoe->image_url ?? [] as $url) {
-            // Extract public_id from URL
-            $publicId = pathinfo(parse_url($url, PHP_URL_PATH), PATHINFO_FILENAME);
-            Cloudinary::destroy('solesearch/shoes/' . $publicId);
+            $publicId = 'solesearch/shoes/' . pathinfo(parse_url($url, PHP_URL_PATH), PATHINFO_FILENAME);
+            $cloudinary = new \Cloudinary\Cloudinary(env('CLOUDINARY_URL'));
+            $cloudinary->uploadApi()->destroy($publicId);
         }
 
         $shoe->delete();

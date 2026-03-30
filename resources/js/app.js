@@ -5,142 +5,252 @@ window.Alpine = Alpine;
 Alpine.start();
 
 document.addEventListener('DOMContentLoaded', () => {
-    // --- ADD PANEL LOGIC ---
+
+    // ── ADD PANEL ────────────────────────────────────────────────
+    window.openPanel = function () {
+        document.getElementById('sidePanel').classList.add('open');
+        document.getElementById('overlay').style.display = 'block';
+    };
+
+    window.closePanel = function () {
+        document.getElementById('sidePanel').classList.remove('open');
+        document.getElementById('overlay').style.display = 'none';
+    };
+
     const openPanelBtn = document.getElementById('openPanel');
     if (openPanelBtn) {
-        const dropZone = document.getElementById('dropZone');
-        const fileInput = document.getElementById('file-input');
-        const previewGrid = document.getElementById('previewGrid');
-        const placeholder = document.getElementById('placeholder');
+        openPanelBtn.addEventListener('click', window.openPanel);
+    }
 
-        window.openPanel = function () {
-            document.getElementById('sidePanel').classList.add('open');
-            document.getElementById('overlay').style.display = 'block';
+    const dropZone    = document.getElementById('dropZone');
+    const fileInput   = document.getElementById('file-input');
+    const previewGrid = document.getElementById('previewGrid');
+    const placeholder = document.getElementById('placeholder');
+
+    if (dropZone) {
+        setupImageUpload(dropZone, fileInput, previewGrid, placeholder);
+    }
+
+    // ── EDIT PANEL ───────────────────────────────────────────────
+    const editDropZone    = document.getElementById('editDropZone');
+    const editFileInput   = document.getElementById('edit-file-input');
+    const editPreviewGrid = document.getElementById('editPreviewGrid');
+    const editPlaceholder = document.getElementById('editPlaceholder');
+
+    window.openEditPanel = function (shoe) {
+        const panel   = document.getElementById('editSidePanel');
+        const overlay = document.getElementById('editOverlay');
+        const form    = document.getElementById('editShoeForm');
+
+        if (!panel || !form) return;
+
+        form.action = `/admin/shoes/${shoe.id}`;
+
+        document.getElementById('edit_shoe_name').value = shoe.shoe_name ?? '';
+        document.getElementById('edit_brand').value     = shoe.brand     ?? '';
+        document.getElementById('edit_price').value     = shoe.price     ?? '';
+        document.getElementById('edit_color').value     = Array.isArray(shoe.color)
+            ? shoe.color.join(', ')
+            : (shoe.color ?? '');
+        document.getElementById('edit_category').value  = shoe.category  ?? '';
+        document.getElementById('edit_gender').value    = shoe.gender    ?? '';
+
+        // Rebuild image grid
+        editPreviewGrid.innerHTML = '';
+        const images = shoe.image_url ?? [];
+
+        if (images.length > 0) {
+            editPlaceholder.style.display = 'none';
+            images.forEach(url => {
+                const wrapper = createExistingImageWrapper(url, editPreviewGrid, editPlaceholder, editDropZone);
+                editPreviewGrid.appendChild(wrapper);
+            });
+            appendAddMoreButton(editPreviewGrid);
+        } else {
+            editPlaceholder.style.display = 'flex';
         }
 
-        window.closePanel = function () {
-            document.getElementById('sidePanel').classList.remove('open');
-            document.getElementById('overlay').style.display = 'none';
-        }
+        panel.classList.add('open');
+        overlay.style.display = 'block';
+    };
 
-        // NEW: Global functions for EDIT form
-        window.openEditPanel = function (shoe) {
-            const panel = document.getElementById('editSidePanel');
-            const overlay = document.getElementById('editOverlay');
-            const form = document.getElementById('editShoeForm');
+    window.closeEditPanel = function () {
+        document.getElementById('editSidePanel').classList.remove('open');
+        document.getElementById('editOverlay').style.display = 'none';
+    };
 
-            if (panel && form) {
-                // Set dynamic form action for the Update route
-                form.action = `/admin/shoes/${shoe.id}`;
-
-                // Populate fields based on your Shoe model attributes
-                document.getElementById('edit_shoe_name').value = shoe.shoe_name;
-                document.getElementById('edit_brand').value = shoe.brand;
-                document.getElementById('edit_price').value = shoe.price;
-
-                // Convert the color array back to comma-separated string for the input
-                document.getElementById('edit_color').value = Array.isArray(shoe.color) ? shoe.color.join(', ') : shoe.color;
-
-                document.getElementById('edit_category').value = shoe.category || '';
-                document.getElementById('edit_gender').value = shoe.gender || '';
-
-                // Handle Image Preview Grid
-                const grid = document.getElementById('editPreviewGrid');
-                grid.innerHTML = '';
-                if (shoe.image_url && shoe.image_url.length > 0) {
-                    shoe.image_url.forEach(url => {
-                        const img = document.createElement('img');
-                        img.src = url;
-                        img.className = 'image-preview-item'; // Using your existing class
-                        grid.appendChild(img);
-                    });
-                }
-
-                panel.classList.add('open');
-                overlay.style.display = 'block';
-            }
-        }
-
-        window.closeEditPanel = function () {
-            document.getElementById('editSidePanel').classList.remove('open');
-            document.getElementById('editOverlay').style.display = 'none';
-        }
-
+    if (editDropZone) {
         setupImageUpload(editDropZone, editFileInput, editPreviewGrid, editPlaceholder);
     }
 
-    // --- SHARED HELPER FUNCTIONS ---
+    // ── SHARED HELPERS ───────────────────────────────────────────
 
+    /**
+     * Wire up click-to-browse + drag-and-drop on a drop zone.
+     *
+     * KEY FIX: Uses a DataTransfer object as a "file store" so the real
+     * File objects are kept in sync with the visual preview grid.
+     * On form submit, fileStore.files is assigned to the input so Laravel
+     * receives the files via $request->hasFile('images').
+     */
     function setupImageUpload(zone, input, grid, placeholder) {
         if (!zone || !input) return;
 
-        zone.addEventListener('click', () => input.click());
-        input.addEventListener('click', (e) => e.stopPropagation());
-        input.addEventListener('change', (e) => handleFiles(Array.from(e.target.files), grid, placeholder, zone));
+        const fileStore = new DataTransfer();
 
-        zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('drag-active'); });
+        // Assign real files to the input right before form submission
+        const form = zone.closest('form');
+        if (form) {
+            form.addEventListener('submit', () => {
+                input.files = fileStore.files;
+            });
+        }
+
+        zone.addEventListener('click', () => input.click());
+        input.addEventListener('click', e => e.stopPropagation());
+        input.addEventListener('change', e => {
+            handleFiles(Array.from(e.target.files), grid, placeholder, zone, fileStore);
+            e.target.value = '';
+        });
+
+        zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('drag-active'); });
         zone.addEventListener('dragleave', () => zone.classList.remove('drag-active'));
-        zone.addEventListener('drop', (e) => {
+        zone.addEventListener('drop', e => {
             e.preventDefault();
             zone.classList.remove('drag-active');
             const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
-            handleFiles(files, grid, placeholder, zone);
+            handleFiles(files, grid, placeholder, zone, fileStore);
         });
     }
 
-    function handleFiles(files, grid, placeholder, zone) {
+    /**
+     * Read new local files and append preview wrappers.
+     * Also adds each File to fileStore so it survives until submit.
+     */
+    function handleFiles(files, grid, placeholder, zone, fileStore) {
         if (files.length === 0) return;
+
         placeholder.style.display = 'none';
-        zone.classList.add('has-image');
+        removeAddMoreButton(grid);
 
         files.forEach(file => {
+            fileStore.items.add(file);
+
             const reader = new FileReader();
-            reader.onload = (e) => {
-                const wrapper = createPreviewWrapper(e.target.result, true, grid, placeholder, zone);
-
-                // Manage the "+ Add More" overlay
-                const existingAddMore = grid.querySelector('.add-more-overlay');
-                if (existingAddMore) existingAddMore.remove();
-
+            reader.onload = e => {
+                const wrapper = createNewImageWrapper(e.target.result, file, grid, placeholder, zone, fileStore);
                 grid.appendChild(wrapper);
-
-                const addMoreDiv = document.createElement('div');
-                addMoreDiv.className = 'add-more-overlay';
-                addMoreDiv.textContent = '+ Add More';
-                grid.appendChild(addMoreDiv);
+                appendAddMoreButton(grid);
             };
             reader.readAsDataURL(file);
         });
     }
 
-    function createPreviewWrapper(src, isNew, grid, placeholder, zone) {
+    /**
+     * Wrapper for a NEW (locally-selected) image.
+     * Removing it also removes the File from fileStore.
+     */
+    function createNewImageWrapper(src, file, grid, placeholder, zone, fileStore) {
         const wrapper = document.createElement('div');
         wrapper.className = 'preview-item-wrapper';
 
         const img = document.createElement('img');
-        img.src = src;
+        img.src       = src;
         img.className = 'image-preview-item';
-
         wrapper.appendChild(img);
 
-        if (isNew) {
-            const removeBtn = document.createElement('button');
-            removeBtn.type = 'button';
-            removeBtn.className = 'remove-image-btn';
-            removeBtn.textContent = '✕';
-            removeBtn.addEventListener('click', (ev) => {
-                ev.stopPropagation();
-                wrapper.remove();
-                if (grid.querySelectorAll('.preview-item-wrapper').length === 0) {
-                    placeholder.style.display = 'flex';
-                    zone.classList.remove('has-image');
-                    const addMore = grid.querySelector('.add-more-overlay');
-                    if (addMore) addMore.remove();
-                }
-            });
-            wrapper.appendChild(removeBtn);
-        }
+        const removeBtn = buildRemoveButton(() => {
+            const remaining = Array.from(fileStore.files).filter(f => f !== file);
+            while (fileStore.items.length) fileStore.items.remove(0);
+            remaining.forEach(f => fileStore.items.add(f));
+
+            wrapper.remove();
+            maybeShowPlaceholder(grid, placeholder, zone);
+        });
+        wrapper.appendChild(removeBtn);
 
         return wrapper;
+    }
+
+    /**
+     * Wrapper for an EXISTING (server-side) image.
+     * Removing it switches the hidden input name to 'delete_images[]'
+     * so the controller knows to remove it from Cloudinary.
+     */
+    function createExistingImageWrapper(url, grid, placeholder, zone) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'preview-item-wrapper';
+
+        const img = document.createElement('img');
+        img.src       = url;
+        img.className = 'image-preview-item';
+        wrapper.appendChild(img);
+
+        const hidden = document.createElement('input');
+        hidden.type  = 'hidden';
+        hidden.name  = 'existing_images[]';
+        hidden.value = url;
+        wrapper.appendChild(hidden);
+
+        const removeBtn = buildRemoveButton(() => {
+            hidden.name            = 'delete_images[]';
+            wrapper.style.opacity  = '0.35';
+            wrapper.style.outline  = '2px solid #ff4444';
+            removeBtn.replaceWith(buildUndoButton(hidden, wrapper, removeBtn));
+            maybeShowPlaceholder(grid, placeholder, zone);
+        });
+        wrapper.appendChild(removeBtn);
+
+        return wrapper;
+    }
+
+    function buildRemoveButton(onClick) {
+        const btn = document.createElement('button');
+        btn.type        = 'button';
+        btn.className   = 'remove-image-btn';
+        btn.textContent = '✕';
+        btn.title       = 'Remove image';
+        btn.addEventListener('click', e => { e.stopPropagation(); onClick(); });
+        return btn;
+    }
+
+    function buildUndoButton(hidden, wrapper, originalRemoveBtn) {
+        const btn = document.createElement('button');
+        btn.type        = 'button';
+        btn.className   = 'remove-image-btn undo-image-btn';
+        btn.textContent = '↩';
+        btn.title       = 'Undo removal';
+        btn.addEventListener('click', e => {
+            e.stopPropagation();
+            hidden.name           = 'existing_images[]';
+            wrapper.style.opacity = '1';
+            wrapper.style.outline = '';
+            btn.replaceWith(originalRemoveBtn);
+        });
+        return btn;
+    }
+
+    function appendAddMoreButton(grid) {
+        removeAddMoreButton(grid);
+        const div = document.createElement('div');
+        div.className   = 'add-more-overlay';
+        div.textContent = '+ Add More';
+        grid.appendChild(div);
+    }
+
+    function removeAddMoreButton(grid) {
+        grid.querySelector('.add-more-overlay')?.remove();
+    }
+
+    function maybeShowPlaceholder(grid, placeholder, zone) {
+        const remaining = grid.querySelectorAll('.preview-item-wrapper');
+        const anyActive = Array.from(remaining).some(
+            w => w.querySelector('input[name="existing_images[]"]') || !w.querySelector('input')
+        );
+        if (!anyActive) {
+            removeAddMoreButton(grid);
+            placeholder.style.display = 'flex';
+            zone.classList.remove('has-image');
+        }
     }
 });

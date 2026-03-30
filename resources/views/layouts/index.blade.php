@@ -6,9 +6,9 @@
     <title>Admin Dashboard - SoleSearch</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=dm-sans:400,500,700" rel="stylesheet" />
-    
+
     @vite([
-        'resources/css/app.css', 
+        'resources/css/app.css',
         'resources/css/dashboard.css',
         'resources/css/components/shoe-detail-card.css'
     ])
@@ -68,7 +68,6 @@
         <div class="shoes">
             @forelse($shoes as $shoe)
                 <div class="shoe-card-container">
-                    {{-- Updated: Component handles the wide layout internally --}}
                     <x-shoe-detail-card :shoe="$shoe" />
                 </div>
             @empty
@@ -83,9 +82,11 @@
     {{-- Add Shoe Panel --}}
     @include('components.addform')
 
-    {{-- New Edit Shoe Panel --}}
+    {{-- Edit Shoe Panel --}}
     @include('components.editform')
 
+    {{-- Confirm Modal (required for Move to Trash and other confirmations) --}}
+    @include('components.confirm-modal')
 
     @if($errors->any())
     <script>
