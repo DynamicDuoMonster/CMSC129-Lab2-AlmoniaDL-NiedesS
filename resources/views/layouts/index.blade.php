@@ -14,20 +14,19 @@
     ])
 
     <style>
-        /* Responsive Grid Logic */
         .shoes {
             display: grid;
-            /* Creates as many columns as fit, each at least 450px wide */
-            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
             padding: 20px 0;
         }
 
-        /* Adjusts for smaller screens where 450px might be too wide */
+        @media (max-width: 1100px) {
+            .shoes { grid-template-columns: repeat(2, 1fr); }
+        }
+
         @media (max-width: 600px) {
-            .shoes {
-                grid-template-columns: 1fr;
-            }
+            .shoes { grid-template-columns: 1fr; }
         }
 
         .shoe-card-container {
@@ -41,6 +40,62 @@
             border-radius: 8px;
             border: 1px solid #2ecc71;
             margin-bottom: 20px;
+        }
+
+        /* ── Pagination ── */
+        .pagination-wrap {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            padding: 32px 0 24px;
+        }
+
+        .pagination-wrap a,
+        .pagination-wrap span {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 36px;
+            height: 36px;
+            padding: 0 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            font-family: 'DM Sans', sans-serif;
+            text-decoration: none;
+            transition: all 0.15s;
+            border: 1px solid #2a2a2a;
+            color: #888;
+            background: #111;
+        }
+
+        .pagination-wrap a:hover {
+            background: #1e1e1e;
+            border-color: #444;
+            color: #fff;
+        }
+
+        .pagination-wrap span.current {
+            background: #c9954a;
+            border-color: #c9954a;
+            color: #000;
+            font-weight: 700;
+            cursor: default;
+        }
+
+        .pagination-wrap span.disabled {
+            opacity: 0.3;
+            cursor: default;
+            pointer-events: none;
+        }
+
+        .pagination-info {
+            text-align: center;
+            color: #555;
+            font-size: 12px;
+            margin-top: -16px;
+            padding-bottom: 20px;
         }
     </style>
 </head>
@@ -71,11 +126,43 @@
                     <x-shoe-detail-card :shoe="$shoe" />
                 </div>
             @empty
-                <div class="empty-state">
+                <div class="empty-state" style="grid-column: 1 / -1;">
                     <p class="empty-msg">No shoes found in the inventory.</p>
                 </div>
             @endforelse
         </div>
+
+        {{-- Pagination --}}
+        @if($shoes->hasPages())
+            <div class="pagination-wrap">
+                {{-- Prev --}}
+                @if($shoes->onFirstPage())
+                    <span class="disabled">← Prev</span>
+                @else
+                    <a href="{{ $shoes->previousPageUrl() }}">← Prev</a>
+                @endif
+
+                {{-- Page Numbers --}}
+                @foreach($shoes->getUrlRange(1, $shoes->lastPage()) as $page => $url)
+                    @if($page == $shoes->currentPage())
+                        <span class="current">{{ $page }}</span>
+                    @else
+                        <a href="{{ $url }}">{{ $page }}</a>
+                    @endif
+                @endforeach
+
+                {{-- Next --}}
+                @if($shoes->hasMorePages())
+                    <a href="{{ $shoes->nextPageUrl() }}">Next →</a>
+                @else
+                    <span class="disabled">Next →</span>
+                @endif
+            </div>
+
+            <p class="pagination-info">
+                Showing {{ $shoes->firstItem() }}–{{ $shoes->lastItem() }} of {{ $shoes->total() }} products
+            </p>
+        @endif
 
     </div>
 
@@ -85,7 +172,7 @@
     {{-- Edit Shoe Panel --}}
     @include('components.editform')
 
-    {{-- Confirm Modal (required for Move to Trash and other confirmations) --}}
+    {{-- Confirm Modal --}}
     @include('components.confirm-modal')
 
     @if($errors->any())

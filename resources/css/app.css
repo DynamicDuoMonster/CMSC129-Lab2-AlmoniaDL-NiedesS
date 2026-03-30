@@ -54,7 +54,7 @@ body {
     background-color: #222;
     border: 1px solid #2a2a2a;
     border-radius: 9999px;
-    padding: 6px 16px 6px 36px;
+    padding: 6px 32px 6px 36px;
     font-size: 13px;
     color: #ccc;
     outline: none;
@@ -70,6 +70,31 @@ body {
     background-color: #2a2a2a;
     border-color: #444;
     color: #fff;
+}
+
+/* Clear (✕) button inside the search input */
+.nav__search-clear {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #555;
+    cursor: pointer;
+    font-size: 11px;
+    padding: 2px 4px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: color 0.15s, background-color 0.15s;
+}
+
+.nav__search-clear:hover {
+    color: #fff;
+    background-color: #333;
 }
 
 .nav__pills {

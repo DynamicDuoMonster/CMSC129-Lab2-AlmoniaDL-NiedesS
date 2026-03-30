@@ -1,7 +1,7 @@
 <nav class="nav">
 
     <!-- Logo -->
-    <a href="{{ route('home') }}" class="nav__logo">SoleSearch</a>
+    <a href="{{ route('admin.shoes.index') }}" class="nav__logo">SoleSearch</a>
 
     <!-- Search -->
     <div class="nav__search-wrap">
@@ -9,23 +9,41 @@
             <circle cx="11" cy="11" r="8"/>
             <line x1="21" y1="21" x2="16.65" y2="16.65"/>
         </svg>
-        <input type="text" id="navSearchInput" placeholder="Search shoes..." class="nav__search-input">
+        <input
+            type="text"
+            id="navSearchInput"
+            placeholder="Search shoes..."
+            class="nav__search-input"
+            value="{{ request('search') }}"
+            autocomplete="off"
+        >
+        <button
+            id="navSearchClear"
+            class="nav__search-clear"
+            type="button"
+            style="display: {{ request('search') ? 'flex' : 'none' }};"
+            aria-label="Clear search"
+        >✕</button>
     </div>
 
     <!-- Category Pills -->
     <div class="nav__pills">
         @foreach(\App\Models\Category::all() as $cat)
-            <a href="{{ route('admin.shoes.index', ['category_id' => $cat->id]) }}" 
+            <a href="{{ route('admin.shoes.index', array_merge(request()->except('page'), ['category_id' => $cat->id])) }}"
             class="nav__pill {{ request('category_id') == $cat->id ? 'active' : '' }}">
                 {{ $cat->name }}
             </a>
         @endforeach
 
-        <a href="{{ route('admin.shoes.index', ['gender' => 'Mens']) }}" 
+        <a href="{{ route('admin.shoes.index', array_merge(request()->except('page'), ['gender' => 'Mens'])) }}"
         class="nav__pill {{ request('gender') == 'Mens' ? 'active' : '' }}">Mens</a>
-        
-        <a href="{{ route('admin.shoes.index', ['gender' => 'Womens']) }}" 
+
+        <a href="{{ route('admin.shoes.index', array_merge(request()->except('page'), ['gender' => 'Womens'])) }}"
         class="nav__pill {{ request('gender') == 'Womens' ? 'active' : '' }}">Womens</a>
+
+        @if(request('category_id') || request('gender') || request('search'))
+            <a href="{{ route('admin.shoes.index') }}" class="nav__pill nav__pill--clear">✕ Clear</a>
+        @endif
     </div>
 
     <!-- Auth -->
@@ -47,4 +65,3 @@
     </div>
 
 </nav>
-
