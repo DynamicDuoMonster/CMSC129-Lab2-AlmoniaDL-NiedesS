@@ -19,6 +19,17 @@ Route::get('/dashboard', function () {
     return view('layouts.index');
 })->name('dashboard');
 
+// Routes for the quick reset demo
+Route::get('forgot-password', function() {
+    return view('layouts.quick-reset');
+})->name('password.request');
+
+Route::post('forgot-password', [App\Http\Controllers\LoginController::class, 'quickReset'])->name('password.update');
+
+Route::get('/new-page', function () {
+    return view('new-page');
+});
+
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/shoes', [ShoeController::class, 'index'])->name('shoes.index');
     Route::get('/shoes/create', [ShoeController::class, 'create'])->name('shoes.create');

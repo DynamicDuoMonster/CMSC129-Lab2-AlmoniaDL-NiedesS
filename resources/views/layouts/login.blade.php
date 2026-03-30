@@ -43,7 +43,7 @@
             <button type="submit">Log In</button>
 
             <div class="login-footer">
-                <a href="#">Forgot Password?</a>
+                <a href="{{ route('password.request') }}">Forgot Password?</a>
             </div>
         </form>
     </div>
