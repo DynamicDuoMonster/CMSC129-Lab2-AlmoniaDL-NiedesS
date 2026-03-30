@@ -26,11 +26,15 @@
         <input type="text" name="color" placeholder="Colors (comma separated)" value="{{ old('color') }}" required />
 
         <div class="select-row">
-            <select name="category">
-                <option value="">Category</option>
-                <option value="Sports">Sports</option>
-                <option value="Lifestyle">Lifestyle</option>
+            <select name="category_id" required>
+                <option value="">Select Category</option>
+                @foreach(\App\Models\Category::all() as $cat)
+                    <option value="{{ $cat->id }}" {{ old('category_id') == $cat->id ? 'selected' : '' }}>
+                        {{ $cat->name }}
+                    </option>
+                @endforeach
             </select>
+            
             <select name="gender">
                 <option value="">Gender</option>
                 <option value="Mens">Mens</option>

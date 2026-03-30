@@ -10,9 +10,30 @@ use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class ShoeController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $shoes = Shoe::active()->latest()->get();
+        $query = Shoe::active();
+
+        // Filter by Category ID
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        // Filter by Gender
+        if ($request->filled('gender')) {
+            $query->where('gender', $request->gender);
+        }
+
+        // Search by shoe name or brand (case-insensitive)
+        if ($request->filled('search')) {
+            $search = strtolower($request->search);
+            $query->where(function ($q) use ($search) {
+                $q->whereRaw('LOWER(shoe_name) LIKE ?', ["%{$search}%"])
+                  ->orWhereRaw('LOWER(brand) LIKE ?', ["%{$search}%"]);
+            });
+        }
+
+        $shoes = $query->latest()->paginate(9)->withQueryString();
         return view('layouts.index', compact('shoes'));
     }
 
@@ -53,7 +74,7 @@ class ShoeController extends Controller
             'category'  => $request->category,
             'gender'    => $request->gender,
             'color'     => $colors,
-            'image_url' => $imagePaths, // This now stores full https://res.cloudinary.com/... links
+            'image_url' => $imagePaths,
         ]);
 
         return redirect()->route('admin.shoes.index')->with('success', 'Shoe added successfully.');
@@ -67,22 +88,20 @@ class ShoeController extends Controller
     public function update(Request $request, Shoe $shoe)
     {
         $request->validate([
-            'shoe_name' => 'required|string',
-            'brand'     => 'required|string',
-            'price'     => 'required|numeric',
-            'category'  => 'nullable|string',
-            'gender'    => 'nullable|string',
-            'color'     => 'nullable|string',
-            'images.*'  => 'nullable|image|max:2048',
+            'shoe_name'   => 'required|string',
+            'brand'       => 'required|string',
+            'price'       => 'required|numeric',
+            'category_id' => 'nullable|exists:categories,id',
+            'gender'      => 'nullable|string',
+            'color'       => 'nullable|string',
+            'images.*'    => 'nullable|image|max:2048',
         ]);
 
         $colors = array_map('trim', explode(',', $request->color));
 
-        // Start from the existing images still marked as kept
         $keptUrls   = $request->input('existing_images', []);
         $deleteUrls = $request->input('delete_images', []);
 
-        // Delete removed images from Cloudinary
         foreach ($deleteUrls as $url) {
             $publicId = 'solesearch/shoes/' . pathinfo(parse_url($url, PHP_URL_PATH), PATHINFO_FILENAME);
             $cloudinary = new \Cloudinary\Cloudinary(env('CLOUDINARY_URL'));
@@ -91,7 +110,6 @@ class ShoeController extends Controller
 
         $imagePaths = $keptUrls;
 
-        // Upload any new images (use same method as store())
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $image) {
                 $cloudinary = new \Cloudinary\Cloudinary(env('CLOUDINARY_URL'));
@@ -103,13 +121,13 @@ class ShoeController extends Controller
         }
 
         $shoe->update([
-            'shoe_name' => $request->shoe_name,
-            'brand'     => $request->brand,
-            'price'     => $request->price,
-            'category'  => $request->category,
-            'gender'    => $request->gender,
-            'color'     => $colors,
-            'image_url' => $imagePaths,
+            'shoe_name'   => $request->shoe_name,
+            'brand'       => $request->brand,
+            'price'       => $request->price,
+            'category_id' => $request->category_id,
+            'gender'      => $request->gender,
+            'color'       => $colors,
+            'image_url'   => $imagePaths,
         ]);
 
         return redirect()->route('admin.shoes.index')->with('success', 'Shoe updated successfully.');
@@ -143,7 +161,6 @@ class ShoeController extends Controller
 
     public function destroy(Shoe $shoe)
     {
-        // Delete images from Cloudinary
         foreach ($shoe->image_url ?? [] as $url) {
             $publicId = 'solesearch/shoes/' . pathinfo(parse_url($url, PHP_URL_PATH), PATHINFO_FILENAME);
             $cloudinary = new \Cloudinary\Cloudinary(env('CLOUDINARY_URL'));

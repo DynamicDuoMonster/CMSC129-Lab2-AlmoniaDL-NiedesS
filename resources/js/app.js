@@ -6,6 +6,68 @@ Alpine.start();
 
 document.addEventListener('DOMContentLoaded', () => {
 
+    // ── SEARCH ───────────────────────────────────────────────────
+    const searchInput = document.getElementById('navSearchInput');
+    const searchClear = document.getElementById('navSearchClear');
+
+    if (searchInput) {
+        let searchTimer = null;
+
+        searchInput.addEventListener('input', () => {
+            const val = searchInput.value.trim();
+
+            // Show/hide the clear button
+            if (searchClear) {
+                searchClear.style.display = val ? 'flex' : 'none';
+            }
+
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(() => {
+                submitSearch(val);
+            }, 400); // 400ms debounce
+        });
+
+        // Submit on Enter immediately (skip debounce)
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                clearTimeout(searchTimer);
+                submitSearch(searchInput.value.trim());
+            }
+            // Clear on Escape
+            if (e.key === 'Escape') {
+                clearTimeout(searchTimer);
+                searchInput.value = '';
+                if (searchClear) searchClear.style.display = 'none';
+                submitSearch('');
+            }
+        });
+
+        if (searchClear) {
+            searchClear.addEventListener('click', () => {
+                clearTimeout(searchTimer);
+                searchInput.value = '';
+                searchClear.style.display = 'none';
+                submitSearch('');
+                searchInput.focus();
+            });
+        }
+    }
+
+    function submitSearch(term) {
+        const url = new URL(window.location.href);
+
+        if (term) {
+            url.searchParams.set('search', term);
+        } else {
+            url.searchParams.delete('search');
+        }
+
+        // Reset to page 1 when searching
+        url.searchParams.delete('page');
+
+        window.location.href = url.toString();
+    }
+
     // ── ADD PANEL ────────────────────────────────────────────────
     window.openPanel = function () {
         document.getElementById('sidePanel').classList.add('open');
@@ -52,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('edit_color').value     = Array.isArray(shoe.color)
             ? shoe.color.join(', ')
             : (shoe.color ?? '');
-        document.getElementById('edit_category').value  = shoe.category  ?? '';
+        document.getElementById('edit_category_id').value = shoe.category_id ?? '';
         document.getElementById('edit_gender').value    = shoe.gender    ?? '';
 
         // Rebuild image grid
@@ -85,20 +147,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ── SHARED HELPERS ───────────────────────────────────────────
 
-    /**
-     * Wire up click-to-browse + drag-and-drop on a drop zone.
-     *
-     * KEY FIX: Uses a DataTransfer object as a "file store" so the real
-     * File objects are kept in sync with the visual preview grid.
-     * On form submit, fileStore.files is assigned to the input so Laravel
-     * receives the files via $request->hasFile('images').
-     */
     function setupImageUpload(zone, input, grid, placeholder) {
         if (!zone || !input) return;
 
         const fileStore = new DataTransfer();
 
-        // Assign real files to the input right before form submission
         const form = zone.closest('form');
         if (form) {
             form.addEventListener('submit', () => {
@@ -123,10 +176,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    /**
-     * Read new local files and append preview wrappers.
-     * Also adds each File to fileStore so it survives until submit.
-     */
     function handleFiles(files, grid, placeholder, zone, fileStore) {
         if (files.length === 0) return;
 
@@ -146,10 +195,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    /**
-     * Wrapper for a NEW (locally-selected) image.
-     * Removing it also removes the File from fileStore.
-     */
     function createNewImageWrapper(src, file, grid, placeholder, zone, fileStore) {
         const wrapper = document.createElement('div');
         wrapper.className = 'preview-item-wrapper';
@@ -172,11 +217,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return wrapper;
     }
 
-    /**
-     * Wrapper for an EXISTING (server-side) image.
-     * Removing it switches the hidden input name to 'delete_images[]'
-     * so the controller knows to remove it from Cloudinary.
-     */
     function createExistingImageWrapper(url, grid, placeholder, zone) {
         const wrapper = document.createElement('div');
         wrapper.className = 'preview-item-wrapper';

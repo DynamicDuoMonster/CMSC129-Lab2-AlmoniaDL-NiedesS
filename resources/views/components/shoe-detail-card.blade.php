@@ -64,7 +64,7 @@
             <span class="brand-badge">{{ $shoe->brand }}</span>
             <h4>{{ $shoe->shoe_name }}</h4>
             <p class="tags">
-                {{ collect([$shoe->gender, $shoe->category])->filter()->join(' • ') }}
+                {{ collect([$shoe->gender, $shoe->category->name ?? 'Uncategorized'])->filter()->join(' • ') }}
             </p>
             <p class="price">P{{ number_format($shoe->price) }}</p>
         </div>
