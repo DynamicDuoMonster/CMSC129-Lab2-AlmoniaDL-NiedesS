@@ -78,7 +78,7 @@
         .submit-btn {
             width: 100%;
             padding: 14px;
-            background: #c9954a; /* SoleSearch Gold */
+            background: #fff; /* SoleSearch Gold */
             color: #000;
             border: none;
             border-radius: 8px;
@@ -116,8 +116,7 @@
 
     <div class="reset-container">
         <div class="reset-card">
-            <h2>Quick Reset</h2>
-            <div class="demo-badge">LABORATORY DEMO MODE</div>
+            <h2>Reset Password</h2>
 
             <form method="POST" action="{{ route('password.update') }}" class="reset-form">
                 @csrf
