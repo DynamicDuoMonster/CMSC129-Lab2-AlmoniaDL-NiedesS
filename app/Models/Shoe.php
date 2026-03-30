@@ -7,23 +7,22 @@ use Illuminate\Database\Eloquent\Model;
 class Shoe extends Model
 {
     protected $fillable = [
-    'shoe_name', 
-    'brand', 
-    'color', 
-    'price', 
-    'image_url',
-    'category',    // Keep this for now to avoid breaking existing code
-    'category_id', // Add this for the new relationship
-    'gender', 
-    'is_deleted', 
-    'deleted_at',
-];
+        'shoe_name',
+        'brand',
+        'color',
+        'price',
+        'image_url',
+        'category_id',
+        'gender',
+        'is_deleted',
+        'deleted_at',
+    ];
 
     protected function casts(): array
     {
         return [
-            'color'     => 'array',
-            'image_url' => 'array',
+            'color'      => 'array',
+            'image_url'  => 'array',
             'is_deleted' => 'boolean',
             'deleted_at' => 'datetime',
         ];
@@ -39,8 +38,9 @@ class Shoe extends Model
         return $query->where('is_deleted', true);
     }
 
-    public function category()
+    // Renamed to 'categoryModel' to avoid clash with the 'category' string column
+    public function categoryModel()
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsTo(Category::class, 'category_id');
     }
 }

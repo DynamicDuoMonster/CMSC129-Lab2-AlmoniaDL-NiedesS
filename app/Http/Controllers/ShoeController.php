@@ -33,7 +33,7 @@ class ShoeController extends Controller
             });
         }
 
-        $shoes = $query->latest()->paginate(9)->withQueryString();
+        $shoes = $query->with("categoryModel")->latest()->paginate(9)->withQueryString();
         return view('layouts.index', compact('shoes'));
     }
 
@@ -45,13 +45,13 @@ class ShoeController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'shoe_name' => 'required|string',
-            'brand'     => 'required|string',
-            'price'     => 'required|numeric',
-            'category'  => 'nullable|string',
-            'gender'    => 'nullable|string',
-            'color'     => 'nullable|string',
-            'images.*'  => 'nullable|image|max:2048',
+            'shoe_name'   => 'required|string',
+            'brand'       => 'required|string',
+            'price'       => 'required|numeric',
+            'category_id' => 'nullable|exists:categories,id',
+            'gender'      => 'nullable|string',
+            'color'       => 'nullable|string',
+            'images.*'    => 'nullable|image|max:2048',
         ]);
 
         $colors = array_map('trim', explode(',', $request->color));
@@ -67,14 +67,15 @@ class ShoeController extends Controller
                 $imagePaths[] = $result['secure_url'];
             }
         }
+
         Shoe::create([
-            'shoe_name' => $request->shoe_name,
-            'brand'     => $request->brand,
-            'price'     => $request->price,
-            'category'  => $request->category,
-            'gender'    => $request->gender,
-            'color'     => $colors,
-            'image_url' => $imagePaths,
+            'shoe_name'   => $request->shoe_name,
+            'brand'       => $request->brand,
+            'price'       => $request->price,
+            'category_id' => $request->category_id,
+            'gender'      => $request->gender,
+            'color'       => $colors,
+            'image_url'   => $imagePaths,
         ]);
 
         return redirect()->route('admin.shoes.index')->with('success', 'Shoe added successfully.');
