@@ -12,21 +12,19 @@ class ShoeController extends Controller
 {
     public function index(Request $request)
     {
-        // Start with active shoes
         $query = Shoe::active();
 
-        // Filter by Category (Lifestyle, Sports)
-        if ($request->filled('category')) {
-            $query->where('category', $request->category);
+        // Filter by the new Category ID
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
         }
 
-        // Filter by Gender (Mens, Womens)
+        // Filter by the existing Gender string
         if ($request->filled('gender')) {
             $query->where('gender', $request->gender);
         }
 
         $shoes = $query->latest()->get();
-        
         return view('layouts.index', compact('shoes'));
     }
 
@@ -81,14 +79,14 @@ class ShoeController extends Controller
     public function update(Request $request, Shoe $shoe)
     {
         $request->validate([
-            'shoe_name' => 'required|string',
-            'brand'     => 'required|string',
-            'price'     => 'required|numeric',
-            'category'  => 'nullable|string',
-            'gender'    => 'nullable|string',
-            'color'     => 'nullable|string',
-            'images.*'  => 'nullable|image|max:2048',
-        ]);
+        'shoe_name'   => 'required|string',
+        'brand'       => 'required|string',
+        'price'       => 'required|numeric',
+        'category_id' => 'nullable|exists:categories,id',
+        'gender'      => 'nullable|string',
+        'color'       => 'nullable|string',
+        'images.*'    => 'nullable|image|max:2048',
+    ]);
 
         $colors = array_map('trim', explode(',', $request->color));
 
@@ -117,13 +115,13 @@ class ShoeController extends Controller
         }
 
         $shoe->update([
-            'shoe_name' => $request->shoe_name,
-            'brand'     => $request->brand,
-            'price'     => $request->price,
-            'category'  => $request->category,
-            'gender'    => $request->gender,
-            'color'     => $colors,
-            'image_url' => $imagePaths,
+            'shoe_name'   => $request->shoe_name,
+            'brand'       => $request->brand,
+            'price'       => $request->price,
+            'category_id' => $request->category_id,
+            'gender'      => $request->gender,
+            'color'       => $colors,
+            'image_url'   => $imagePaths,
         ]);
 
         return redirect()->route('admin.shoes.index')->with('success', 'Shoe updated successfully.');

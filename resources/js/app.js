@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('edit_color').value     = Array.isArray(shoe.color)
             ? shoe.color.join(', ')
             : (shoe.color ?? '');
-        document.getElementById('edit_category').value  = shoe.category  ?? '';
+        document.getElementById('edit_category_id').value = shoe.category_id ?? '';
         document.getElementById('edit_gender').value    = shoe.gender    ?? '';
 
         // Rebuild image grid

@@ -36,12 +36,11 @@
             </div>
 
             <div class="select-row">
-                <select name="category" id="edit_category">
+                <select name="category_id" id="edit_category_id">
                     <option value="">Category</option>
-                    <option value="Sports">Sports</option>
-                    <option value="Lifestyle">Lifestyle</option>
-                    <option value="Running">Running</option>
-                    <option value="Basketball">Basketball</option>
+                    @foreach(\App\Models\Category::all() as $cat)
+                        <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                    @endforeach
                 </select>
                 <select name="gender" id="edit_gender">
                     <option value="">Gender</option>
